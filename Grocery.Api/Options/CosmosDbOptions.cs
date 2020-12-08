@@ -1,18 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Grocery.Options {
-  public class CosmosDbOptions {
-    public string DatabaseName { get; set; }
-    public List<CollectionInfo> CollectionNames { get; set; }
-
-    public void Deconstruct(out string databaseName, out List<CollectionInfo> collectionNames) {
-      databaseName = DatabaseName;
-      collectionNames = CollectionNames;
-    }
-
-    public class CollectionInfo {
-      public string Name { get; set; }
-      public string PartitionKey { get; set; }
-    }
-  }
+  //public class CosmosDbOptions {
+  //  public Uri ServiceEndpoint { get; set; }
+  //  public string AuthKey { get; set; }
+  //  public string DatabaseName { get; set; }
+  //}
 }

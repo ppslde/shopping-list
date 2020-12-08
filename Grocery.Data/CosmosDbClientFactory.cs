@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Documents;
+﻿using Grocery.Data.Interfaces;
+using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using System;
 using System.Collections.Generic;

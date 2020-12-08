@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using Grocery.Model.Entities;
+using System.Threading.Tasks;
 
 namespace Grocery.Model.Interfaces {
   public interface IRepository<T> where T : Entity {

@@ -1,6 +1,7 @@
 using System.Linq;
 using Grocery.Api.ConfigExtensions;
-using Grocery.Data;
+using Grocery.Data.Repositories;
+using Grocery.Model.Interfaces;
 using Grocery.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -20,15 +21,12 @@ namespace Grocery.Api {
     public void ConfigureServices(IServiceCollection services) {
       services.AddControllers();
 
-      var connectionStringOptions = Configuration.GetSection("ConnectionString").Get<ConnectionStringOptions>();
-      var cosmosDbOptions = Configuration.GetSection("CosmosDb").Get<CosmosDbOptions>();
-      var (serviceEndpoint, authKey) = connectionStringOptions;
-      var (databaseName, collectionData) = cosmosDbOptions;
-      var collectionNames = collectionData.Select(c => c.Name).ToList();
+      services.Configure<CosmosDbOptions>(Configuration.GetSection("CosmosDb"));
+
 
       services.AddCosmosDb(serviceEndpoint, authKey, databaseName, collectionNames);
 
-      services.AddScoped<GroceryItemRepository, GroceryItemRepository>();
+      services.AddScoped<IGroceryItemRepository, GroceryItemRepository>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,9 +36,7 @@ namespace Grocery.Api {
       }
 
       app.UseHttpsRedirection();
-
       app.UseRouting();
-
       app.UseAuthorization();
 
       app.UseEndpoints(endpoints => {

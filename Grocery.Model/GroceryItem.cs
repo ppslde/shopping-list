@@ -1,4 +1,6 @@
-﻿namespace Grocery.Model {
+﻿using Grocery.Model.Entities;
+
+namespace Grocery.Model {
 
 
   /// <summary>

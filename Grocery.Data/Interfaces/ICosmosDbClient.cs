@@ -3,7 +3,7 @@ using Microsoft.Azure.Documents.Client;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Grocery.Data {
+namespace Grocery.Data.Interfaces {
   public interface ICosmosDbClient {
     Task<Document> ReadDocumentAsync(string documentId, RequestOptions options = null, CancellationToken cancellationToken = default);
     Task<Document> CreateDocumentAsync(object document, RequestOptions options = null, bool disableAutomaticIdGeneration = false, CancellationToken cancellationToken = default);
