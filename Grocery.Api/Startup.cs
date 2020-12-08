@@ -1,5 +1,6 @@
 using System.Linq;
 using Grocery.Api.ConfigExtensions;
+using Grocery.Data;
 using Grocery.Data.Repositories;
 using Grocery.Model.Interfaces;
 using Grocery.Options;
