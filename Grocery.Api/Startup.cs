@@ -3,7 +3,6 @@ using Grocery.Api.ConfigExtensions;
 using Grocery.Data;
 using Grocery.Data.Interfaces;
 using Grocery.Data.Repositories;
-using Grocery.Model.Interfaces;
 using Grocery.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -21,15 +20,14 @@ namespace Grocery.Api {
 
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services) {
+      
+      services.AddCosmosDbConfiguration(Configuration);
       services.AddControllers();
+      
 
-      services.Configure<CosmosDbOptions>(Configuration.GetSection("CosmosDb"));
-
-
-      //services.AddCosmosDb(null, "", "", null); ;
-
-      services.AddScoped<ICosmosDbClient, CosmosDbClient>();
-      services.AddScoped<IGroceryItemRepository, GroceryItemRepository>();
+      //services.Configure<CosmosDbOptions>(Configuration.GetSection("CosmosDb"));
+      //services.AddScoped<ICosmosDbClient, CosmosDbClient>();
+      //services.AddScoped<ICategoryRepository, CategoryRepository>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

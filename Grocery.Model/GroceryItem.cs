@@ -7,7 +7,9 @@ namespace Grocery.Model {
   /// https://github.com/Azure-Samples/PartitionedRepository/blob/master/TodoService.Api/Startup.cs
   /// </summary>
 
-  public class GroceryItem: Entity {
-    public string Category { get; set; }
+  public class GroceryItem {
+    public string FoodId { get; set; }
+    public string Display { get; set; }
+    public bool Done { get; set; }
   }
 }

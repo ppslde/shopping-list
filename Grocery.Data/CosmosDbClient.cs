@@ -2,6 +2,8 @@
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Linq;
 using System.Threading;
@@ -14,7 +16,11 @@ namespace Grocery.Data {
 
     public CosmosDbClient(IOptions<CosmosDbOptions> options) {
       _dbOptions = options.Value;
-      _docClient = new DocumentClient(_dbOptions.ServiceEndpoint, _dbOptions.AuthKey);
+      _docClient = new DocumentClient(_dbOptions.ServiceEndpoint, _dbOptions.AuthKey, new JsonSerializerSettings {
+        NullValueHandling = NullValueHandling.Ignore,
+        DefaultValueHandling = DefaultValueHandling.Ignore,
+        ContractResolver = new CamelCasePropertyNamesContractResolver()
+      });
     }
 
     public async Task<Document> ReadDocumentAsync(string collection, string documentId, RequestOptions options = null, CancellationToken cancellationToken = default) {

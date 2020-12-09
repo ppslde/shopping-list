@@ -1,5 +1,6 @@
-﻿using Grocery.Model;
-using Grocery.Model.Interfaces;
+﻿using Grocery.Data.Interfaces;
+using Grocery.Model;
+using Grocery.Model.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -12,18 +13,22 @@ namespace Grocery.Api.Controllers {
   [ApiController]
   public class GroceryItemController : ControllerBase {
 
-    private readonly IGroceryItemRepository _repo;
+    private readonly ICategoryRepository _repo;
 
-    public GroceryItemController(IGroceryItemRepository repo) {
+    public GroceryItemController(ICategoryRepository repo) {
       _repo = repo;
     }
 
     [HttpGet]
-    public async Task<GroceryItem> GetAsync() {
-
-
-      var i = await _repo.AddAsync(new GroceryItem { Category = "Test" });
-
+    public async Task<Category> GetAsync() {
+      var i = await _repo.AddAsync(
+        new Category {
+          GroceryId = Guid.NewGuid().ToString(),
+          Title = "TestCat",
+          Translations = new[] { 
+            new Translation { Language = "de", Title = "Gruppe 1" }
+          }.ToList()
+        });
       return i;
     }
   }

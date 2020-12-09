@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Grocery.Model.Entities {
-  public class Shop : Entity {
+namespace Grocery.Model {
+  public class Translation {
+    public string Language { get; set; }
     public string Title { get; set; }
-    public string GroceryId { get; set; }
   }
 }

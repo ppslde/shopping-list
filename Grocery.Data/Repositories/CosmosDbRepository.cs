@@ -1,14 +1,11 @@
 ﻿using Grocery.Data.Interfaces;
 using Grocery.Model.Entities;
 using Grocery.Model.Exceptions;
-using Grocery.Model.Interfaces;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Grocery.Data.Repositories {
@@ -21,14 +18,13 @@ namespace Grocery.Data.Repositories {
     }
 
     protected abstract string CollectionName { get; }
+    protected abstract PartitionKey ResolvePartitionKey(T entity);
     protected virtual string GenerateId(T entity) => Guid.NewGuid().ToString();
-    protected virtual PartitionKey ResolvePartitionKey(string entityId) => null;
 
-
-    public async Task<T> GetByIdAsync(string id) {
+    public async Task<T> GetByIdAsync(string id, string partitionkey) {
       try {
         var document = await _dbClient.ReadDocumentAsync(CollectionName, id, new RequestOptions {
-          PartitionKey = ResolvePartitionKey(id)
+          PartitionKey = new PartitionKey(partitionkey)
         });
         return JsonConvert.DeserializeObject<T>(document.ToString());
       }
@@ -43,7 +39,7 @@ namespace Grocery.Data.Repositories {
     public async Task<T> AddAsync(T entity) {
 
       try {
-        entity.Uid = GenerateId(entity);
+        entity.Id = GenerateId(entity);
         var document = await _dbClient.CreateDocumentAsync(CollectionName, entity);
         return JsonConvert.DeserializeObject<T>(document.ToString());
       }
@@ -58,7 +54,7 @@ namespace Grocery.Data.Repositories {
     public async Task UpdateAsync(T entity) {
 
       try {
-        await _dbClient.ReplaceDocumentAsync(CollectionName, entity.Uid, entity);
+        await _dbClient.ReplaceDocumentAsync(CollectionName, entity.Id, entity);
       }
       catch (DocumentClientException e) {
         if (e.StatusCode == HttpStatusCode.NotFound) {
@@ -71,8 +67,8 @@ namespace Grocery.Data.Repositories {
     public async Task DeleteAsync(T entity) {
 
       try {
-        await _dbClient.DeleteDocumentAsync(CollectionName, entity.Uid, new RequestOptions {
-          PartitionKey = ResolvePartitionKey(entity.Uid)
+        await _dbClient.DeleteDocumentAsync(CollectionName, entity.Id, new RequestOptions {
+          PartitionKey = ResolvePartitionKey(entity)
         });
       }
       catch (DocumentClientException e) {

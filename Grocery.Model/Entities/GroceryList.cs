@@ -3,20 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace Grocery.Model.Entities {
-  public class Grocery : Entity {
+  public class GroceryList : Entity {
     public string Title { get; set; }
     public DateTime LastChange { get; set; }
     public bool Active { get; set; }
-  }
-
-
-
-
-
-
-
-  public class Translation {
-    public string Language { get; set; }
-    public string Title { get; set; }
+    public List<GroceryItem> Items { get; set; }
+    public List<GroceryStore> Stores { get; set; }
   }
 }

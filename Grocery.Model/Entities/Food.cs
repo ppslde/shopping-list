@@ -2,6 +2,7 @@
 
 namespace Grocery.Model.Entities {
   public class Food : Entity {
+    public string GroceryId { get; set; }
     public string Title { get; set; }
     public string CategoryId { get; set; }
     public List<Translation> Translations { get; set; } = new List<Translation>();
