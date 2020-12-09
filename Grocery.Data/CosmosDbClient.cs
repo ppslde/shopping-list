@@ -1,47 +1,46 @@
 ﻿using Grocery.Data.Interfaces;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
+using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Grocery.Data {
-  class CosmosDbClient : ICosmosDbClient {
-    private readonly string _databaseName;
-    private readonly string _collectionName;
-    private readonly IDocumentClient _documentClient;
+  public class CosmosDbClient : ICosmosDbClient {
+    private readonly CosmosDbOptions _dbOptions;
+    private readonly IDocumentClient _docClient;
 
-    public CosmosDbClient(string databaseName, string collectionName, IDocumentClient documentClient) {
-      _databaseName = databaseName ?? throw new ArgumentNullException(nameof(databaseName));
-      _collectionName = collectionName ?? throw new ArgumentNullException(nameof(collectionName));
-      _documentClient = documentClient ?? throw new ArgumentNullException(nameof(documentClient));
+    public CosmosDbClient(IOptions<CosmosDbOptions> options) {
+      _dbOptions = options.Value;
+      _docClient = new DocumentClient(_dbOptions.ServiceEndpoint, _dbOptions.AuthKey);
     }
 
-    public async Task<Document> ReadDocumentAsync(string documentId, RequestOptions options = null, CancellationToken cancellationToken = default) {
-      return await _documentClient.ReadDocumentAsync(
-          UriFactory.CreateDocumentUri(_databaseName, _collectionName, documentId), options, cancellationToken);
+    public async Task<Document> ReadDocumentAsync(string collection, string documentId, RequestOptions options = null, CancellationToken cancellationToken = default) {
+      return await _docClient.ReadDocumentAsync(
+          UriFactory.CreateDocumentUri(_dbOptions.DatabaseName, collection, documentId), options, cancellationToken);
     }
 
-    public async Task<Document> CreateDocumentAsync(object document, RequestOptions options = null, bool disableAutomaticIdGeneration = false, CancellationToken cancellationToken = default) {
-      return await _documentClient.CreateDocumentAsync(
-          UriFactory.CreateDocumentCollectionUri(_databaseName, _collectionName), document, options,
+    public async Task<Document> CreateDocumentAsync(string collection, object document, RequestOptions options = null, bool disableAutomaticIdGeneration = false, CancellationToken cancellationToken = default) {
+      return await _docClient.CreateDocumentAsync(
+          UriFactory.CreateDocumentCollectionUri(_dbOptions.DatabaseName, collection), document, options,
           disableAutomaticIdGeneration, cancellationToken);
     }
 
-    public async Task<Document> ReplaceDocumentAsync(string documentId, object document, RequestOptions options = null, CancellationToken cancellationToken = default) {
-      return await _documentClient.ReplaceDocumentAsync(
-          UriFactory.CreateDocumentUri(_databaseName, _collectionName, documentId), document, options,
+    public async Task<Document> ReplaceDocumentAsync(string collection, string documentId, object document, RequestOptions options = null, CancellationToken cancellationToken = default) {
+      return await _docClient.ReplaceDocumentAsync(
+          UriFactory.CreateDocumentUri(_dbOptions.DatabaseName, collection, documentId), document, options,
           cancellationToken);
     }
 
-    public async Task<Document> DeleteDocumentAsync(string documentId, RequestOptions options = null, CancellationToken cancellationToken = default) {
-      return await _documentClient.DeleteDocumentAsync(
-          UriFactory.CreateDocumentUri(_databaseName, _collectionName, documentId), options, cancellationToken);
+    public async Task<Document> DeleteDocumentAsync(string collection, string documentId, RequestOptions options = null, CancellationToken cancellationToken = default) {
+      return await _docClient.DeleteDocumentAsync(
+          UriFactory.CreateDocumentUri(_dbOptions.DatabaseName, collection, documentId), options, cancellationToken);
     }
 
     public async Task QueryDocuments() {
-      _documentClient.CreateDocumentQuery("", "").AsEnumerable();
+      _docClient.CreateDocumentQuery("", "").AsEnumerable();
     }
   }
 }

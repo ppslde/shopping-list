@@ -1,6 +1,7 @@
 using System.Linq;
 using Grocery.Api.ConfigExtensions;
 using Grocery.Data;
+using Grocery.Data.Interfaces;
 using Grocery.Data.Repositories;
 using Grocery.Model.Interfaces;
 using Grocery.Options;
@@ -25,8 +26,9 @@ namespace Grocery.Api {
       services.Configure<CosmosDbOptions>(Configuration.GetSection("CosmosDb"));
 
 
-      services.AddCosmosDb(serviceEndpoint, authKey, databaseName, collectionNames);
+      //services.AddCosmosDb(null, "", "", null); ;
 
+      services.AddScoped<ICosmosDbClient, CosmosDbClient>();
       services.AddScoped<IGroceryItemRepository, GroceryItemRepository>();
     }
 

@@ -12,79 +12,66 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Grocery.Data.Repositories {
-  public abstract class CosmosDbRepository<T> : IRepository<T>/*, IDocumentCollectionContext<T>*/ where T : Entity {
+  public abstract class CosmosDbRepository<T> : IRepository<T> where T : Entity {
 
-    //private readonly ICosmosDbClientFactory _cosmosDbClientFactory;
-    private readonly CosmosDbOptions _dbOptions;
-    private readonly DocumentClient _docClient;
+    private readonly ICosmosDbClient _dbClient;
 
-    protected CosmosDbRepository(IOptions<CosmosDbOptions> options, ICosmosDbClientFactory cosmosDbClientFactory) {
-      //_cosmosDbClientFactory = cosmosDbClientFactory;
-      _dbOptions = options.Value;
-      _docClient = new DocumentClient(_dbOptions.ServiceEndpoint, _dbOptions.AuthKey);
+    protected CosmosDbRepository(ICosmosDbClient dbClient) {
+      _dbClient = dbClient;
     }
 
     protected abstract string CollectionName { get; }
     protected virtual string GenerateId(T entity) => Guid.NewGuid().ToString();
     protected virtual PartitionKey ResolvePartitionKey(string entityId) => null;
 
-    public async Task<T> GetByIdAsync(string id, CancellationToken ct) {
-      try {
-        //var cosmosDbClient = _cosmosDbClientFactory.GetClient(CollectionName);
 
-        return await _docClient.ReadDocumentAsync<T>(
-          UriFactory.CreateDocumentUri(_dbOptions.DatabaseName, CollectionName, id),
-          new RequestOptions { PartitionKey = ResolvePartitionKey(id) },
-          ct);
-        //var document = await cosmosDbClient.ReadDocumentAsync(id, );
-        //return JsonConvert.DeserializeObject<T>(document.ToString());
+    public async Task<T> GetByIdAsync(string id) {
+      try {
+        var document = await _dbClient.ReadDocumentAsync(CollectionName, id, new RequestOptions {
+          PartitionKey = ResolvePartitionKey(id)
+        });
+        return JsonConvert.DeserializeObject<T>(document.ToString());
       }
       catch (DocumentClientException e) {
         if (e.StatusCode == HttpStatusCode.NotFound) {
           throw new EntityNotFoundException();
         }
-
         throw;
       }
     }
 
-    public async Task<bool> AddAsync(T entity, CancellationToken ct) {
+    public async Task<T> AddAsync(T entity) {
+
       try {
         entity.Uid = GenerateId(entity);
-        var response = await _docClient.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri(_dbOptions.DatabaseName, CollectionName), ct);
-
-        if (response.StatusCode == HttpStatusCode.Created) {
-          return true;
-        }
-        return false;
+        var document = await _dbClient.CreateDocumentAsync(CollectionName, entity);
+        return JsonConvert.DeserializeObject<T>(document.ToString());
       }
       catch (DocumentClientException e) {
         if (e.StatusCode == HttpStatusCode.Conflict) {
           throw new EntityAlreadyExistsException();
         }
-
         throw;
       }
     }
 
     public async Task UpdateAsync(T entity) {
+
       try {
-        var cosmosDbClient = _cosmosDbClientFactory.GetClient(CollectionName);
-        await cosmosDbClient.ReplaceDocumentAsync(entity.Uid, entity);
+        await _dbClient.ReplaceDocumentAsync(CollectionName, entity.Uid, entity);
       }
       catch (DocumentClientException e) {
         if (e.StatusCode == HttpStatusCode.NotFound) {
           throw new EntityNotFoundException();
         }
-
         throw;
       }
     }
 
     public async Task DeleteAsync(T entity) {
+
       try {
-        var cosmosDbClient = _cosmosDbClientFactory.GetClient(CollectionName);
-        await cosmosDbClient.DeleteDocumentAsync(entity.Uid, new RequestOptions {
+        await _dbClient.DeleteDocumentAsync(CollectionName, entity.Uid, new RequestOptions {
           PartitionKey = ResolvePartitionKey(entity.Uid)
         });
       }
@@ -92,7 +79,6 @@ namespace Grocery.Data.Repositories {
         if (e.StatusCode == HttpStatusCode.NotFound) {
           throw new EntityNotFoundException();
         }
-
         throw;
       }
     }
